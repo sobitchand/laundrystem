@@ -1,0 +1,21 @@
+# Dependencies
+vendor/
+composer.lock
+
+# Logs
+logs/mail.log
+logs/php_errors.log
+logs/security.log
+logs/rate_limits/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env

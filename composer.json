@@ -1,0 +1,9 @@
+{
+  "name": "dd-laundry/webapp",
+  "description": "DD Laundry full-stack PHP and MySQL web application.",
+  "type": "project",
+  "require": {
+    "php": ">=8.0",
+    "phpmailer/phpmailer": "^6.9"
+  }
+}

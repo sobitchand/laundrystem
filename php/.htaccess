@@ -1,0 +1,7 @@
+# Allow API endpoints in this folder to be called by fetch().
+Options -Indexes
+
+# Block helper/config files that should never be requested directly.
+<FilesMatch "^(config|mailer)\.php$">
+    Require all denied
+</FilesMatch>
