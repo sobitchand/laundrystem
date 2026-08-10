@@ -1,4 +1,58 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Customer Registration Page
+ * register.php
+ *
+ * PURPOSE:
+ * Two-step registration flow: (1) Account creation with form
+ * validation, (2) Email OTP verification. Sends OTP via
+ * Gmail SMTP and verifies it before activating the account.
+ *
+ * FEATURES:
+ * - Step 1: Registration form with fields:
+ *   - Full Name (required, min 2 chars)
+ *   - Phone Number (required, Nepal format: 98XXXXXXXX)
+ *   - Email Address (required, validated)
+ *   - Password (required, min 8 chars)
+ *   - Confirm Password (must match)
+ * - Step 2: 6-digit OTP verification with:
+ *   - 6 separate input boxes with auto-advance
+ *   - Paste support for full OTP
+ *   - Resend OTP button with 60-second countdown
+ * - Visual left panel showing registration benefits
+ * - AJAX calls to php/auth.php for register, verify_otp, resend_otp
+ * - Loading states on all buttons
+ * - Field-level error highlighting
+ * - Pre-fills email from URL parameter (?email=...)
+ *
+ * DATA FLOW:
+ * 1. PHP: Check if logged in -> redirect to dashboard
+ * 2. PHP: Generate CSRF token
+ * 3. User fills registration form
+ * 4. JS: apiCall() POST to php/auth.php (action: 'register')
+ * 5. php/auth.php: Validates, creates user, sends OTP email
+ * 6. JS: Hides Step 1, shows Step 2 OTP form
+ * 7. User enters 6-digit OTP from email
+ * 8. JS: apiCall() POST to php/auth.php (action: 'verify_otp')
+ * 9. php/auth.php: Verifies OTP with timing-safe comparison
+ * 10. On success: Redirect to login.php
+ * 11. On OTP failure: Resend available after 60s cooldown
+ *
+ * SECURITY:
+ * - CSRF token on all forms
+ * - Rate limiting: 10 registrations per IP per hour
+ * - OTP: 6 digits, 15-min expiry, single-use
+ * - Password hashed with bcrypt cost-12 server-side
+ * - No passwords stored/transmitted in plain text
+ * - Email enumeration prevention (same response for existing/unregistered)
+ * - All user input sanitized server-side
+ *
+ * OWASP: A01 (CSRF), A02 (bcrypt), A03 (prepared statements),
+ *        A07 (rate limiting, OTP expiry, timing-safe comparison),
+ *        A09 (security logging)
+ * ============================================================
 require_once __DIR__ . '/php/config.php';
 sendSecurityHeaders();
 if (isLoggedIn()) { header('Location: dashboard.php'); exit; }

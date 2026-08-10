@@ -1,4 +1,43 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Pricing Page
+ * pricing.php
+ *
+ * PURPOSE:
+ * Displays all laundry service rates with expandable details
+ * and a sticky sidebar summary table. Customers can view
+ * pricing per service type (Regular Wash, Premium Wash,
+ * Dry Cleaning, Ironing) before placing an order.
+ *
+ * FEATURES:
+ * - Responsive hero banner with gradient background
+ * - Service cards loaded dynamically from 'services' database table
+ * - Each card shows: icon, name, description, price, unit
+ * - Expandable card details showing what's included per service
+ * - Sticky sidebar with pricing summary table
+ * - Order CTA card (different links for logged-in vs guest users)
+ * - FAQ section with 6 common questions (author-controlled content)
+ * - Keyboard accessible (Enter/Space to toggle cards and FAQs)
+ * - Scroll-triggered fade-in animations via IntersectionObserver
+ *
+ * DATA FLOW:
+ * 1. PHP queries 'services' table for active services
+ * 2. Services rendered as expandable HTML cards
+ * 3. Prices shown per unit (per piece/per kg)
+ * 4. FAQ data is hardcoded (safe - no user input)
+ * 5. CTA buttons route to dashboard.php or register.php
+ *
+ * SECURITY:
+ * - CSRF token embedded in meta tag
+ * - Security headers sent via sendSecurityHeaders()
+ * - All dynamic data escaped with htmlspecialchars()
+ * - FAQ content is developer-controlled (no XSS risk)
+ * - Logged-in state checked to show appropriate CTA buttons
+ *
+ * OWASP: A05 (security headers), A07 (login state check), A03 (XSS prevention)
+ * ============================================================
 require_once __DIR__ . '/php/config.php';
 sendSecurityHeaders();
 $isLoggedIn = isLoggedIn();

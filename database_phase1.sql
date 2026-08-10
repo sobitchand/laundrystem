@@ -1,8 +1,82 @@
 -- ============================================================
--- DD Laundry — Phase 1 Migration
--- Adds: cloth_types, order_items_v2, payments, feedback,
---        subtotal/discount/invoice_number on orders
--- Run in phpMyAdmin or MySQL CLI (idempotent — safe to re-run)
+-- DD Laundry Database Setup - Phase 2 Migration
+-- database_phase1.sql
+--
+-- PURPOSE:
+-- Extends the core schema (database.sql) with 5 additional
+-- tables and enhanced order tracking features. This migration
+-- adds per-cloth-type pricing, payment tracking, customer
+-- feedback, invoice generation, and order analytics support.
+--
+-- HOW TO USE:
+-- 1. First run database.sql to create core tables
+-- 2. Then run this file (database_phase1.sql) to add Phase 2
+-- 3. Safe to re-run (uses IF NOT EXISTS and conditional ALTER)
+--
+-- NEW TABLES ADDED:
+-- 1. cloth_types - Individual garment types with per-piece prices
+--    - 26 cloth types across 4 service categories
+--    - Enables granular pricing (e.g., Suit=250, Shirt=50)
+--    - Replaces generic service-based pricing
+--
+-- 2. order_items_v2 - Enhanced order line items
+--    - Links to cloth_types instead of services
+--    - Stores unit_price_snapshot (price at time of order)
+--    - Prevents price changes from affecting old orders
+--    - Migrates existing data from order_items table
+--
+-- 3. payments - Payment transaction tracking
+--    - Supports cash, eSewa, Khalti, bank_transfer
+--    - Tracks payment status (pending/paid/failed/refunded)
+--    - Records transaction reference and paid timestamp
+--    - Auto-marks COD as paid when order delivered
+--
+-- 4. feedback - Customer reviews and ratings
+--    - 1-5 star rating with CHECK constraint
+--    - Requires admin approval before public display
+--    - Links to users table (CASCADE DELETE)
+--    - Displayed on homepage testimonials section
+--
+-- 5. invoice_sequence - Invoice number generation
+--    - Tracks last invoice number per year
+--    - Enables sequential invoice numbers (DD-2026-000001)
+--    - Prevents duplicate invoice numbers
+--    - Atomic increment via INSERT ... ON DUPLICATE KEY UPDATE
+--
+-- ENHANCED COLUMNS (orders table):
+-- - subtotal: Order subtotal before discount
+-- - discount: Discount amount (reserved for future use)
+-- - invoice_number: Unique invoice identifier (DD-YYYY-NNNNNN)
+--
+-- SEED DATA:
+-- - 26 cloth types with realistic pricing
+-- - Example: Shirt (Regular Wash) = NPR 50, Suit (Dry Cleaning) = NPR 250
+--
+-- MIGRATION SAFETY:
+-- - Uses CREATE TABLE IF NOT EXISTS (no errors if table exists)
+-- - Uses ON DUPLICATE KEY UPDATE for seed data (idempotent)
+-- - Conditional ALTER TABLE (checks if column exists first)
+-- - Migrates existing order_items data to order_items_v2
+-- - Backfills invoice numbers for existing orders
+--
+-- PRICING MODEL CHANGE:
+-- Before: Service-based pricing (e.g., Regular Wash = 50/kg)
+-- After:  Cloth-type pricing (e.g., Shirt = 50/piece, Jeans = 60/piece)
+-- - More accurate pricing for different garment types
+-- - Customers select specific items, not just service category
+-- - Admin can add/edit cloth types dynamically
+--
+-- RELATIONSHIPS:
+-- - cloth_types.service_id → services.id
+-- - order_items_v2.order_id → orders.id (CASCADE DELETE)
+-- - order_items_v2.cloth_type_id → cloth_types.id
+-- - payments.order_id → orders.id (CASCADE DELETE)
+-- - feedback.user_id → users.id (CASCADE DELETE)
+--
+-- SECURITY NOTES:
+-- - Rating CHECK constraint ensures 1-5 range
+-- - Foreign keys maintain referential integrity
+-- - CASCADE DELETE prevents orphaned records
 -- ============================================================
 
 USE dd_laundry;

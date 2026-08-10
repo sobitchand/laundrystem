@@ -1,4 +1,52 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Admin Login Page
+ * admin/login.php
+ *
+ * PURPOSE:
+ * Separate authentication page for administrators. Uses
+ * dedicated admin session (separate from customer sessions)
+ * with its own CSRF tokens, rate limiting, and security logging.
+ *
+ * FEATURES:
+ * - Dark charcoal background (visually distinct from customer login)
+ * - Username or Email field (accepts either)
+ * - Password field with show/hide toggle
+ * - AJAX login via apiCall() to php/admin_api.php (action: 'admin_login')
+ * - Loading state on submit button
+ * - Alert display for success/error
+ * - "Back to Website" link to main site
+ * - CSRF token in hidden form field and meta tag
+ *
+ * DATA FLOW:
+ * 1. PHP: Check if admin already logged in -> redirect to admin dashboard
+ * 2. PHP: Generate CSRF token, render login form
+ * 3. User enters username/email + password
+ * 4. JS: apiCall() POST to php/admin_api.php (action: 'admin_login')
+ * 5. php/admin_api.php: Validates CSRF, checks rate limit (per IP)
+ * 6. Server: Queries admins table (by username OR email)
+ * 7. Server: password_verify() with timing-safe comparison
+ * 8. On success: Regenerate session, set admin_id in session
+ * 9. JS: Redirect to admin/index.php
+ * 10. On failure: Show error, rate limit counter incremented
+ *
+ * SECURITY:
+ * - Separate admin session (admin_id vs user_id)
+ * - Rate limiting per IP address (10 attempts per 5 minutes)
+ * - CSRF token validation
+ * - Session regeneration on successful login
+ * - Security logging for all login attempts (success and failure)
+ * - Password hashed with bcrypt cost-12
+ * - Constant-time password verification (prevents timing attacks)
+ * - No sensitive data in JavaScript or URL parameters
+ * - Security headers via sendSecurityHeaders()
+ *
+ * OWASP: A01 (CSRF), A02 (bcrypt), A03 (prepared statements),
+ *        A07 (rate limiting, session regeneration, timing-safe),
+ *        A09 (security logging)
+ * ============================================================
 require_once __DIR__ . '/../php/config.php';
 sendSecurityHeaders();
 if (isAdminLoggedIn()) { header('Location: index.php'); exit; }

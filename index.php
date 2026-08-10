@@ -1,4 +1,95 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Homepage / Public Website
+ * index.php
+ *
+ * PURPOSE:
+ * Main public-facing landing page for DD Laundry. Showcases
+ * services, features, customer testimonials, contact info,
+ * and Google Maps location. Acts as the entry point for
+ * new and returning visitors.
+ *
+ * SECTIONS (top to bottom):
+ *
+ * 1. NAVBAR
+ *    - Logo, navigation links (Services, Pricing, Contact)
+ *    - Dynamic links based on login state:
+ *      - Logged in: "Hello, [Name]" -> Dashboard
+ *      - Guest: "Login" + "Get Started" buttons
+ *    - Hamburger menu for mobile
+ *    - Scroll effect: background becomes solid on scroll
+ *    - Mobile menu overlay
+ *
+ * 2. HERO SECTION
+ *    - Full-width gradient background with animated visual
+ *    - Headline: "Fresh Clothes, Delivered to Your Door"
+ *    - Subtitle describing DD Laundry services
+ *    - CTA buttons: "Book Now" (register) or "Place Order" (dashboard)
+ *    - Stats bar: 500+ Customers, 4 Services, 24hr Turnaround
+ *    - Animated order card visual showing active order state
+ *
+ * 3. SERVICES SECTION
+ *    - Grid of service cards loaded from 'services' table
+ *    - Each card: icon, name, price/unit, expandable details
+ *    - Services: Regular Wash, Premium Wash, Dry Cleaning, Ironing
+ *    - Cards expand on click to show description + feature tags
+ *    - "View Full Pricing" button links to pricing.php
+ *    - Scroll-triggered fade-in animations
+ *
+ * 4. WHY US SECTION (dark background)
+ *    - 4 feature cards: Free Pickup, 24hr Turnaround,
+ *      Quality Guaranteed, Real-Time Tracking
+ *    - Each card with icon, title, and description
+ *
+ * 5. CUSTOMER FEEDBACK SECTION
+ *    - Loaded from 'feedback' table (approved only)
+ *    - Shows up to 6 testimonials in a grid
+ *    - Each card: star rating, message, author name, date
+ *    - Hidden entirely if no approved feedback exists
+ *
+ * 6. CONTACT & MAP SECTION
+ *    - Contact info card: Address, Phone, Hours, Pickup Service
+ *    - Embedded contact form (name, email, phone, message)
+ *    - Form submits to php/contact.php via AJAX
+ *    - Google Maps iframe showing DD Laundry location in Imadol
+ *
+ * 7. CTA BANNER (only for guests)
+ *    - "Ready for Fresh, Clean Clothes?" with signup/login buttons
+ *    - Hidden for logged-in users
+ *
+ * 8. FOOTER
+ *    - Brand info, Services link, Account links, Contact info
+ *    - Copyright with current year (dynamic)
+ *    - "Made with love for Lalitpur" tagline
+ *
+ * DATA FLOW:
+ * 1. PHP: Check login state, generate CSRF token
+ * 2. PHP: Query 'services' table for active services -> render cards
+ * 3. PHP: Query 'feedback' table for approved testimonials -> render grid
+ * 4. JS: Contact form submits via AJAX to php/contact.php
+ * 5. JS: Mobile menu toggle, scroll animations, service card accordion
+ * 6. JS: Logout handler for mobile menu (if logged in)
+ *
+ * SECURITY:
+ * - CSRF token in meta tag for contact form
+ * - Security headers via sendSecurityHeaders()
+ * - All user data escaped with htmlspecialchars()
+ * - Login state determines which navigation/CTAs to show
+ * - XSS prevention: htmlspecialchars on all dynamic content
+ * - Contact form rate-limited server-side (5 per IP per 10 min)
+ *
+ * RESPONSIVE DESIGN:
+ * - Mobile-first CSS with breakpoints at 900px and 600px
+ * - Hamburger menu replaces nav links on mobile
+ * - Service cards stack vertically on narrow screens
+ * - Hero section adapts layout for mobile
+ * - Contact grid stacks on mobile
+ *
+ * OWASP: A01 (CSRF on contact form), A03 (XSS prevention),
+ *        A05 (security headers), A07 (rate limiting on contact)
+ * ============================================================
 require_once __DIR__ . '/php/config.php';
 sendSecurityHeaders();
 $isLoggedIn = isLoggedIn();

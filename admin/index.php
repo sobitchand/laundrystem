@@ -1,4 +1,120 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Admin Dashboard
+ * admin/index.php
+ *
+ * PURPOSE:
+ * Complete administration panel for managing the DD Laundry
+ * business. Provides 7 tabs: Dashboard, All Orders, Messages,
+ * Services, Customers, Feedback, and Change Password.
+ * Protected by requireAdmin() authentication gate.
+ *
+ * TABS & FEATURES:
+ *
+ * 1. DASHBOARD (?tab=dashboard)
+ *    - 4 stat cards: Today's Revenue, Month Revenue,
+ *      Total Revenue, Total Orders
+ *    - 4 more cards: Today's Orders, Pending Orders,
+ *      Total Customers, Active Services
+ *    - 7-day revenue trend mini-chart (sparkline-style bars)
+ *    - Top 5 services by revenue
+ *    - Status breakdown pie chart (orders by status)
+ *    - All data loaded via AJAX from php/admin_api.php (get_dashboard)
+ *
+ * 2. ALL ORDERS (?tab=orders)
+ *    - Filterable order table with:
+ *      - Status filter dropdown (all statuses + "All")
+ *      - Search box (order number, invoice, customer name, email)
+ *      - Pagination (15 orders per page)
+ *    - Columns: Order #, Invoice #, Customer, Date, Items,
+ *      Total, Status (dropdown), Payment, Actions
+ *    - Inline status update dropdown (saves via AJAX)
+ *    - Click row to open full order detail modal
+ *    - Modal shows: Order info, customer details, itemized list,
+ *      status history timeline, map with pickup/delivery markers
+ *    - "View Invoice" button for printable invoice
+ *    - "Delete Order" button with confirmation
+ *
+ * 3. MESSAGES (?tab=messages)
+ *    - List of contact form submissions from public website
+ *    - Shows: Name, Email, Phone, Message, Date, Read status
+ *    - Click to expand full message
+ *    - Mark as read/unread
+ *    - Delete individual messages
+ *
+ * 4. SERVICES (?tab=services)
+ *    - Full CRUD for service categories
+ *    - Add Service: name, description, price, unit, icon
+ *    - Edit Service: inline editing of all fields
+ *    - Toggle Service: activate/deactivate (soft delete)
+ *    - Delete Service: hard remove from database
+ *    - All operations via AJAX to php/admin_api.php
+ *
+ * 5. CUSTOMERS (?tab=customers)
+ *    - Searchable customer list (by name, email, phone)
+ *    - Shows: Name, Email, Phone, Orders count, Total Spent,
+ *      Registration date, Verified status
+ *    - Click customer row to open profile modal
+ *    - Modal shows: Full profile, order history, status breakdown
+ *    - New customer badge count on sidebar
+ *    - "Delete Customer" button with confirmation
+ *
+ * 6. FEEDBACK (?tab=feedback)
+ *    - List of all customer feedback with user email
+ *    - Approve/Unapprove toggle (controls public display)
+ *    - Delete feedback permanently
+ *    - Shows: Customer name, rating stars, message, date, status
+ *
+ * 7. CHANGE PASSWORD (?tab=password)
+ *    - Current Password, New Password, Confirm Password
+ *    - Password show/hide toggles
+ *    - Validates current password before allowing change
+ *    - New password hashed with bcrypt cost-12
+ *
+ * GENERAL FEATURES:
+ * - Responsive sidebar navigation (collapses to hamburger on mobile)
+ * - Mobile overlay when sidebar is open
+ * - New customer toast notifications (polls every 30s)
+ * - Red badge on Customers menu showing unseen customer count
+ * - Logout button in sidebar footer
+ * - "View Website" link to open public site in new tab
+ * - CSRF token on all POST forms
+ *
+ * DATA FLOW:
+ * 1. PHP: requireAdmin() checks admin session, redirects if not logged in
+ * 2. PHP: Determines active tab from URL parameter
+ * 3. PHP: Renders tab-specific HTML structure
+ * 4. JS: On page load, calls appropriate API endpoints
+ * 5. JS: Renders data into tables, charts, modals
+ * 6. JS: Handles all CRUD operations via AJAX POST requests
+ * 7. Backend APIs: Validate CSRF, check admin auth, process data
+ * 8. JS: Updates UI, shows success/error toasts
+ *
+ * MAP FEATURES (in order detail modal):
+ * - Leaflet map showing order location
+ * - Green marker for pickup location
+ * - Red marker for delivery location
+ * - Polyline route between pickup and delivery
+ * - Falls back to Imadol center if no GPS data
+ *
+ * SECURITY:
+ * - requireAdmin() gate on all tabs and API calls
+ * - Separate admin session with its own CSRF tokens
+ * - Session regeneration every 15 minutes
+ * - All mutations require CSRF validation
+ * - XSS prevention: escHtml() for user data, textContent for DOM
+ * - Input sanitization on all form fields
+ * - Whitelist validation for order statuses
+ * - Cascade deletes via foreign keys for data integrity
+ * - Security logging for all admin actions
+ *
+ * OWASP: A01 (CSRF on all mutations), A03 (prepared statements,
+ *        XSS prevention), A04 (admin-only endpoints),
+ *        A05 (security headers), A07 (session regeneration),
+ *        A09 (comprehensive security logging)
+ * ============================================================
 require_once __DIR__ . '/../php/config.php';
 sendSecurityHeaders();
 requireAdmin();

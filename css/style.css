@@ -1,8 +1,252 @@
-/* ============================================================
-   DD Laundry — Main Stylesheet
-   Design: Warm editorial · Crimson red + ivory + charcoal
-   Fonts: Playfair Display + DM Sans
-   ============================================================ */
+/**
+ * ============================================================
+ * DD Laundry - Main Stylesheet
+ * css/style.css
+ *
+ * PURPOSE:
+ * Complete styling for all DD Laundry frontend pages including
+ * public website, customer dashboard, and admin panel. Implements
+ * a warm editorial design system with crimson red, ivory, and
+ * charcoal color palette.
+ *
+ * ============================================================
+ * DESIGN SYSTEM
+ * ============================================================
+ *
+ * COLOR PALETTE:
+ * - Primary: Crimson Red (#C0392B) - Brand color, CTAs, accents
+ * - Dark Red (#922B21) - Headers, hover states, depth
+ * - Light Red (#E74C3C) - Highlights, active states
+ * - Pale Red (#FDEEEC) - Subtle backgrounds, hover effects
+ * - Ivory (#FAF7F4) - Main page background
+ * - White (#FFFFFF) - Cards, modals, clean surfaces
+ * - Charcoal (#1C1C1E) - Primary text, dark backgrounds
+ * - Gray Scale (#2C2C2E to #F5F5F5) - Secondary text, borders
+ * - Gold (#C9992B) - Star ratings, premium accents
+ *
+ * TYPOGRAPHY:
+ * - Headings: Playfair Display (serif) - Elegant, editorial feel
+ * - Body: DM Sans (sans-serif) - Clean, readable, modern
+ * - Display sizes: clamp() for responsive fluid typography
+ * - Line height: 1.65 for body, 1.25 for headings
+ *
+ * SPACING & LAYOUT:
+ * - Border radius: 8px (consistent rounded corners)
+ * - Shadows: 3 levels (sm, md, lg) for depth hierarchy
+ * - Transitions: 0.3s cubic-bezier for smooth animations
+ * - Container: Max-width with padding for centered content
+ *
+ * ============================================================
+ * COMPONENT SECTIONS (in order of appearance)
+ * ============================================================
+ *
+ * 1. RESET & VARIABLES (Lines 9-32)
+ *    - Box-sizing reset for all elements
+ *    - CSS custom properties (variables) for design tokens
+ *    - Smooth scroll behavior
+ *    - Base body styling
+ *
+ * 2. TYPOGRAPHY (Lines 44-49)
+ *    - Heading styles with Playfair Display font
+ *    - Display size classes (xl, lg, md) with fluid scaling
+ *    - Responsive font sizes using clamp()
+ *
+ * 3. NAVIGATION (Lines ~50-150)
+ *    - .navbar - Fixed/sticky top navigation
+ *    - .navbar.scrolled - Solid background on scroll
+ *    - .nav-links - Horizontal menu items
+ *    - .nav-cta - Call-to-action buttons
+ *    - .hamburger - Mobile menu toggle (3-line icon)
+ *    - .mobile-menu - Full-screen overlay menu
+ *
+ * 4. HERO SECTION (Lines ~150-250)
+ *    - .hero - Full-width banner with gradient background
+ *    - .hero-content - Centered content container
+ *    - .hero-title - Large headline with emphasis
+ *    - .hero-stats - Statistics bar (customers, services, hours)
+ *    - .hero-visual - Animated order card visual
+ *    - .hero-card-stack - Stacked card effect
+ *
+ * 5. SERVICES SECTION (Lines ~250-350)
+ *    - .services-grid - CSS Grid layout for service cards
+ *    - .service-card - Individual service card with expand/collapse
+ *    - .service-card.active - Expanded state showing details
+ *    - .service-icon - Emoji/icon container
+ *    - .service-details - Hidden details revealed on click
+ *    - .service-tag - Feature tags (checkmark list)
+ *
+ * 6. FEATURES SECTION (Lines ~350-400)
+ *    - .features-grid - 4-column grid for "Why Us" cards
+ *    - .feature-card - Icon + title + description card
+ *    - .feature-icon - Large emoji display
+ *
+ * 7. FEEDBACK SECTION (Lines ~400-450)
+ *    - .feedback-grid - Testimonial cards grid
+ *    - .feedback-card - Quote card with rating stars
+ *    - .feedback-stars - Star rating display (★/☆)
+ *    - .feedback-author - Customer name and date
+ *
+ * 8. CONTACT SECTION (Lines ~450-500)
+ *    - .contact-grid - Two-column layout (info + map)
+ *    - .contact-info-card - Business info + contact form
+ *    - .contact-info-item - Icon + label + value row
+ *    - .map-container - Google Maps iframe wrapper
+ *
+ * 9. CTA BANNER (Lines ~500-520)
+ *    - .cta-banner - Full-width call-to-action section
+ *    - Dark red gradient background
+ *    - White text with action buttons
+ *
+ * 10. FOOTER (Lines ~520-580)
+ *     - .footer - Dark charcoal background
+ *     - .footer-grid - 4-column layout (brand, services, account, contact)
+ *     - .footer-links - Link lists
+ *     - .footer-bottom - Copyright bar
+ *
+ * 11. BUTTONS (Lines ~580-650)
+ *     - .btn - Base button styles
+ *     - .btn-primary - Red filled button
+ *     - .btn-outline - Bordered button
+ *     - .btn-ghost - Transparent button
+ *     - .btn-white - White button (for dark backgrounds)
+ *     - .btn-sm, .btn-lg - Size variants
+ *     - .btn-full - Full-width button
+ *     - .btn-loading - Disabled state with spinner
+ *
+ * 12. FORMS (Lines ~650-750)
+ *     - .form-group - Label + input wrapper
+ *     - .form-control - Input/select/textarea styling
+ *     - .form-label - Label with required asterisk
+ *     - .form-hint - Helper text below inputs
+ *     - .field-error - Validation error message (red)
+ *     - .form-control.error - Red border on invalid fields
+ *     - .input-group - Input with icon/toggle button
+ *     - .input-icon - Emoji icon inside input
+ *     - .input-toggle - Password show/hide button
+ *
+ * 13. CARDS (Lines ~750-800)
+ *     - .card - Generic card container with shadow
+ *     - .card-body - Padded content area
+ *     - .stat-card - Dashboard statistic card
+ *     - .stat-card-icon - Icon display
+ *     - .stat-card-value - Large number
+ *     - .stat-card-label - Description text
+ *
+ * 14. DATA TABLES (Lines ~800-850)
+ *     - .data-table-wrapper - Scrollable table container
+ *     - .data-table - Styled table with striped rows
+ *     - .data-table th - Header styling
+ *     - .data-table td - Cell styling
+ *     - .status-badge - Colored status indicator
+ *
+ * 15. MODALS (Lines ~850-900)
+ *     - .modal-overlay - Full-screen backdrop
+ *     - .modal - Centered dialog box
+ *     - .modal-header - Title + close button
+ *     - .modal-close - X button
+ *     - .modal-body - Scrollable content area
+ *
+ * 16. TOAST NOTIFICATIONS (Lines ~900-950)
+ *     - .toast-container - Fixed position container
+ *     - .toast - Individual notification card
+ *     - .toast.success/error/info/warning - Color variants
+ *     - slideOutRight animation - Exit animation
+ *
+ * 17. OTP INPUTS (Lines ~950-970)
+ *     - .otp-inputs - 6-box OTP input container
+ *     - .otp-input - Individual digit input box
+ *     - Centered, large text, auto-focus behavior
+ *
+ * 18. STAR RATING (Lines ~970-990)
+ *     - .star-rating - Horizontal star container
+ *     - .star-btn - Interactive star button
+ *     - .star-btn.active - Filled gold star
+ *     - Hover effects with scale transform
+ *
+ * 19. ORDER PROGRESS (Lines ~990-1020)
+ *     - .prog-wrap - Horizontal progress tracker
+ *     - .prog-step - Individual status step
+ *     - .prog-dot - Circle indicator (gray/green/red)
+ *     - .prog-line - Connecting line between steps
+ *     - .prog-label - Step name below dot
+ *
+ * 20. LINE ITEMS (Lines ~1020-1070)
+ *     - .line-item-row - Dynamic order item row
+ *     - .line-item-fields - Flex container for selects/qty
+ *     - .svc-type-sel - Service type dropdown
+ *     - .cloth-sel - Cloth type dropdown
+ *     - .qty-ctrl - Minus/plus quantity buttons
+ *     - .qty-val - Quantity display
+ *     - .line-item-price - Calculated price
+ *
+ * 21. MAP PICKER (Lines ~1070-1100)
+ *     - .map-picker-wrap - Map container wrapper
+ *     - .map-picker - Leaflet map div (400px height)
+ *     - .map-picker-search - Address search input
+ *     - .map-toggle-btn - Show/hide map button
+ *
+ * 22. UTILITY CLASSES (Lines ~1100-1117)
+ *     - .container - Max-width centered container
+ *     - .text-center - Centered text
+ *     - .mt-2, .mt-3, .mt-4 - Margin top utilities
+ *     - .hidden - display: none
+ *     - .sr-only - Screen reader only (visually hidden)
+ *     - .animate-on-scroll - Fade-in animation target
+ *     - .animate-on-scroll.visible - Animation triggered
+ *     - .badge - Notification badge (red circle)
+ *     - .req - Required field asterisk (red)
+ *     - .eyebrow - Small uppercase label above headings
+ *     - .section-divider - Horizontal rule under section headers
+ *
+ * ============================================================
+ * RESPONSIVE BREAKPOINTS
+ * ============================================================
+ *
+ * - Mobile: < 600px (single column, stacked layouts)
+ * - Tablet: 600px - 900px (2-column grids)
+ * - Desktop: > 900px (full multi-column layouts)
+ *
+ * Key responsive features:
+ * - Fluid typography with clamp()
+ * - Grid layouts collapse to single column
+ * - Sidebar becomes overlay on mobile
+ * - Navigation becomes hamburger menu
+ * - Tables become horizontally scrollable
+ *
+ * ============================================================
+ * ANIMATIONS
+ * ============================================================
+ *
+ * - Scroll animations: Fade-in + slide-up via IntersectionObserver
+ * - Toast exit: slideOutRight keyframe (injected by JS)
+ * - Button loading: Spinner animation via CSS
+ * - Modal open/close: Fade + scale transition
+ * - Service card expand: Height transition
+ * - Progress bar: Background color transition
+ *
+ * ============================================================
+ * ACCESSIBILITY
+ * ============================================================
+ *
+ * - Sufficient color contrast (WCAG AA compliant)
+ * - Focus states on all interactive elements
+ * - ARIA attributes for expanded/collapsed states
+ * - Screen reader only class (.sr-only)
+ * - Semantic HTML structure
+ * - Keyboard navigation support (Enter/Space on cards)
+ *
+ * ============================================================
+ * BROWSER COMPATIBILITY
+ * ============================================================
+ *
+ * - Modern browsers (Chrome, Firefox, Safari, Edge)
+ * - CSS Grid and Flexbox for layouts
+ * - CSS custom properties (variables)
+ * - clamp() for fluid typography
+ * - IntersectionObserver for scroll animations (with fallback)
+ * - Passive event listeners for scroll performance
+ * ============================================================
+ */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 

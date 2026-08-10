@@ -1,5 +1,40 @@
--- DD Laundry Database Setup
--- Run this in phpMyAdmin or MySQL CLI
+-- ============================================================
+-- DD Laundry Database Setup - Core Schema (Phase 1)
+-- database.sql
+--
+-- PURPOSE:
+-- Creates the dd_laundry database and all core tables required
+-- for the Online Laundry Service Management System. This is the
+-- foundation schema with 7 tables covering users, admins,
+-- services, orders, order items, status history, and contact
+-- messages. Run this FIRST, then run database_phase1.sql for
+-- additional Phase 2 tables.
+--
+-- HOW TO USE:
+-- 1. Open phpMyAdmin (http://localhost/phpmyadmin)
+-- 2. Click "Import" tab
+-- 3. Choose this file (database.sql)
+-- 4. Click "Go" to execute
+--
+-- TABLES CREATED:
+-- 1. users - Customer accounts with OTP verification
+-- 2. admins - Administrator accounts
+-- 3. services - Laundry service categories (4 types)
+-- 4. orders - Customer laundry orders
+-- 5. order_items - Individual items within each order
+-- 6. order_status_history - Audit log of status changes
+-- 7. contact_messages - Public contact form submissions
+--
+-- DEFAULT DATA:
+-- - 4 services: Regular Wash, Premium Wash, Dry Cleaning, Ironing
+-- - 1 admin: username=admin, password=Admin@123
+--
+-- SECURITY NOTES:
+-- - Passwords stored as bcrypt hashes (cost factor 12)
+-- - CHANGE ADMIN PASSWORD after first login!
+-- - Uses utf8mb4 charset for full Unicode support
+-- - Foreign keys with CASCADE DELETE for data integrity
+-- ============================================================
 
 CREATE DATABASE IF NOT EXISTS dd_laundry CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE dd_laundry;

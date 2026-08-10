@@ -1,4 +1,48 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Customer Login Page
+ * login.php
+ *
+ * PURPOSE:
+ * Provides the customer login interface. Redirects already
+ * logged-in users to dashboard. Handles email/password
+ * authentication via AJAX call to php/auth.php.
+ *
+ * FEATURES:
+ * - Split-screen layout (visual left side, form right side)
+ * - Email and password fields with validation
+ * - Password show/hide toggle button
+ * - "Forgot password?" link to forgot-password.php
+ * - AJAX login via apiCall() to php/auth.php (action: 'login')
+ * - Loading state on submit button during API call
+ * - Alert display for success/error messages
+ * - Special handling for unverified accounts (shows verification link)
+ * - CSRF token embedded in hidden form field and meta tag
+ * - Responsive design (stacks on mobile)
+ *
+ * DATA FLOW:
+ * 1. PHP: Check if already logged in -> redirect to dashboard
+ * 2. PHP: Generate CSRF token, embed in form
+ * 3. User submits email + password
+ * 4. JS: apiCall() sends POST to php/auth.php with action=login
+ * 5. php/auth.php: Validates CSRF, checks rate limit, verifies credentials
+ * 6. On success: Redirect to dashboard.php
+ * 7. On unverified account: Show email verification link
+ * 8. On failure: Show error alert
+ *
+ * SECURITY:
+ * - CSRF token on form (hidden input + meta tag)
+ * - Security headers via sendSecurityHeaders()
+ * - Password field uses autocomplete='current-password'
+ * - Rate limiting handled server-side in php/auth.php
+ * - No sensitive data stored in client-side JavaScript
+ * - XSS prevention via textContent for alerts (not innerHTML)
+ *
+ * OWASP: A01 (CSRF), A03 (XSS prevention), A05 (security headers),
+ *        A07 (rate limiting, session security)
+ * ============================================================
 require_once __DIR__ . '/php/config.php';
 sendSecurityHeaders();
 if (isLoggedIn()) { header('Location: dashboard.php'); exit; }

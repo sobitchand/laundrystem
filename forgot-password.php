@@ -1,4 +1,57 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Forgot Password Page
+ * forgot-password.php
+ *
+ * PURPOSE:
+ * Three-step password recovery flow: (1) Enter email,
+ * (2) Enter OTP received via email, (3) Set new password.
+ * Uses the same OTP mechanism as registration.
+ *
+ * FEATURES:
+ * - Step 1 (fp1): Email input form
+ *   - Sends reset OTP via php/auth.php (action: 'forgot')
+ *   - Returns same response whether email exists (anti-enumeration)
+ * - Step 2 (fp2): 6-digit OTP entry
+ *   - 6 auto-advancing input boxes
+ *   - Paste support
+ *   - Verify button triggers Step 3
+ * - Step 3 (fp3): New password form
+ *   - New Password (min 8 chars)
+ *   - Confirm Password (must match)
+ *   - Password show/hide toggle
+ *   - Submits to php/auth.php (action: 'reset')
+ * - Visual left panel with key icon and tagline
+ * - All steps use AJAX (no page reloads)
+ * - Redirects to login.php on success
+ *
+ * DATA FLOW:
+ * 1. PHP: Check if logged in -> redirect to dashboard
+ * 2. PHP: Generate CSRF token
+ * 3. User enters email in Step 1
+ * 4. JS: apiCall() POST to php/auth.php (action: 'forgot')
+ * 5. php/auth.php: Generates OTP, sends email via PHPMailer
+ * 6. JS: Hides Step 1, shows Step 2 OTP form
+ * 7. User enters OTP from email
+ * 8. JS: Hides Step 2, shows Step 3 new password form
+ * 9. User enters new password + confirmation
+ * 10. JS: apiCall() POST to php/auth.php (action: 'reset')
+ * 11. php/auth.php: Verifies OTP, hashes new password (bcrypt)
+ * 12. On success: Redirect to login.php after 2s
+ *
+ * SECURITY:
+ * - CSRF token on all forms
+ * - Rate limiting on forgot and reset endpoints
+ * - OTP: 6-digit, 15-min expiry, timing-safe comparison
+ * - Password hashed with bcrypt cost-12
+ * - Same response for existing/non-existing emails (anti-enumeration)
+ * - All validation done server-side in php/auth.php
+ *
+ * OWASP: A01 (CSRF), A02 (bcrypt), A03 (prepared statements),
+ *        A07 (OTP expiry, timing-safe, rate limiting), A09 (logging)
+ * ============================================================
 require_once __DIR__ . '/php/config.php';
 sendSecurityHeaders();
 if (isLoggedIn()) { header('Location: dashboard.php'); exit; }

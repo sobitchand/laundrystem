@@ -1,4 +1,106 @@
 <?php
+
+
+ * ============================================================
+ * DD Laundry - Customer Dashboard
+ * dashboard.php
+ *
+ * PURPOSE:
+ * Main customer control panel after login. Provides 6 tabs:
+ * Overview, New Order, My Orders, Feedback, Profile, and
+ * Change Password. All data loaded via AJAX from backend APIs.
+ *
+ * TABS & FEATURES:
+ *
+ * 1. OVERVIEW (?tab=overview)
+ *    - Welcome message with user's first name
+ *    - 4 stat cards: Total Orders, In Progress, Delivered, Total Spent
+ *    - Recent Orders table (last 5 orders)
+ *    - Data loaded via AJAX from php/orders.php (get_orders)
+ *
+ * 2. NEW ORDER (?tab=order)
+ *    - Dynamic cloth type selector grouped by service type
+ *    - Line items with service type -> cloth type -> quantity -> price
+ *    - Live total calculation as items are added
+ *    - Add/remove line item rows dynamically
+ *    - Minus/plus quantity buttons
+ *    - Pickup address with Leaflet map picker
+ *    - Delivery address (optional, defaults to same as pickup)
+ *    - "Use My Location" button for GPS-based address
+ *    - Nominatim geocoding for address search on map
+ *    - Drag-to-move pin on map for precise location
+ *    - Preferred pickup date selector
+ *    - Payment method (Cash on Delivery / Online)
+ *    - Special instructions textarea
+ *    - Order submission via AJAX to php/orders.php (action: 'place')
+ *    - Server-side price validation (never trusts client prices)
+ *    - Invoice number generated automatically
+ *
+ * 3. MY ORDERS (?tab=orders)
+ *    - Paginated order history table
+ *    - Shows: Order #, Date, Items count, Total, Status badge
+ *    - Click "View" opens order detail modal
+ *    - Modal shows: Progress tracker, items list, status history timeline
+ *    - "Download Invoice" button opens printable invoice page
+ *
+ * 4. FEEDBACK (?tab=feedback)
+ *    - Star rating (1-5) with interactive buttons
+ *    - Feedback message textarea
+ *    - Submission via AJAX to php/orders.php (action: 'submit_feedback')
+ *    - Requires admin approval before public display
+ *
+ * 5. PROFILE (?tab=profile)
+ *    - Display/edit: Full Name, Phone, Address
+ *    - Email shown as read-only (cannot be changed)
+ *    - User avatar with initial letter
+ *    - Update via AJAX to php/profile.php (action: 'update')
+ *
+ * 6. CHANGE PASSWORD (?tab=password)
+ *    - Current Password, New Password, Confirm New Password
+ *    - Password show/hide toggles
+ *    - Submission via AJAX to php/profile.php (action: 'change_password')
+ *
+ * GENERAL FEATURES:
+ * - Responsive sidebar navigation (collapses to hamburger on mobile)
+ * - Mobile overlay when sidebar is open
+ * - Logout button in sidebar footer
+ * - CSRF token in meta tag for all AJAX calls
+ * - Loading states on all form submission buttons
+ * - Toast notifications for success/error feedback
+ * - XSS-safe DOM manipulation (escHtml, textContent)
+ *
+ * DATA FLOW:
+ * 1. PHP: requireLogin() checks session, redirects if not logged in
+ * 2. PHP: Determines active tab from URL parameter
+ * 3. PHP: Renders appropriate tab HTML
+ * 4. JS: On page load, calls relevant API endpoints
+ * 5. JS: Renders data into DOM (tables, stats, modals)
+ * 6. JS: Handles form submissions via AJAX
+ * 7. Backend APIs: Validate CSRF, process data, return JSON
+ * 8. JS: Updates UI based on API responses
+ *
+ * MAP INTEGRATION:
+ * - Leaflet.js for interactive OpenStreetMap
+ * - Default center: Imadol, Lalitpur (27.6535, 85.3318)
+ * - Click-to-drop-pin for pickup/delivery locations
+ * - Drag-to-move pin updates coordinates
+ * - Nominatim reverse geocoding fills address from coordinates
+ * - Nominatim search geocoding fills address from text search
+ * - Geolocation API for "Use My Location" button
+ *
+ * SECURITY:
+ * - requireLogin() gate on all tabs
+ * - CSRF token on all POST forms
+ * - Session regeneration every 15 minutes
+ * - XSS prevention: escHtml() for user data, textContent for DOM
+ * - Server-side price validation (order placement)
+ * - User-scoped queries (can only see own orders)
+ * - Input sanitization on all form fields
+ *
+ * OWASP: A01 (CSRF), A03 (XSS prevention, prepared statements),
+ *        A04 (user-scoped queries prevent IDOR),
+ *        A05 (security headers), A07 (session regeneration)
+ * ============================================================
 require_once __DIR__ . '/php/config.php';
 sendSecurityHeaders();
 requireLogin();
