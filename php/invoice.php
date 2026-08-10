@@ -1,4 +1,19 @@
 <?php
+/**
+ * DD Laundry - Invoice Generator
+ * 
+ * Generates printable invoice HTML for orders.
+ * Accessible to order owner or admin only.
+ * 
+ * Features:
+ * - Professional invoice layout with DD Laundry branding
+ * - Itemized billing with cloth types and service categories
+ * - Payment status badge (paid/pending/refunded)
+ * - Print-optimized CSS
+ * - Customer and order details
+ * 
+ * OWASP: A01 (authorization check), A03 (XSS prevention via htmlspecialchars)
+ */
 require_once __DIR__ . '/../php/config.php';
 sendSecurityHeaders();
 requireLogin();

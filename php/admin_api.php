@@ -54,6 +54,15 @@ switch ($action) {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Handle admin login with rate limiting.
+ * 
+ * Authenticates admin by username or email.
+ * Uses constant-time password verification to prevent timing attacks.
+ * Regenerates session ID on success.
+ * 
+ * @return void Sends JSON response with redirect
+ */
 function handleAdminLogin() {
     $db   = getDB();
     $user = sanitize($_POST['username'] ?? '');
@@ -87,6 +96,13 @@ function handleAdminLogin() {
     jsonResponse(['success'=>true,'redirect'=>SITE_URL.'/admin/index.php']);
 }
 
+/**
+ * Handle admin logout.
+ * 
+ * Clears admin session and logs event.
+ * 
+ * @return void Sends JSON response with redirect
+ */
 function handleAdminLogout() {
     $adminId = $_SESSION['admin_id'] ?? null;
     $_SESSION = [];
@@ -100,6 +116,14 @@ function handleAdminLogout() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get paginated orders with filtering and search.
+ * 
+ * Supports status filter and text search (order number, invoice,
+ * customer name, email). Returns customer info and item count.
+ * 
+ * @return void Sends JSON response with orders and pagination
+ */
 function adminGetOrders() {
     $db     = getDB();
     $status = sanitize($_GET['status'] ?? '');
@@ -143,6 +167,14 @@ function adminGetOrders() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get complete order details for admin.
+ * 
+ * Returns order with customer info, items (with cloth type names),
+ * status history, and payment details.
+ * 
+ * @return void Sends JSON response with order data
+ */
 function adminGetOrderDetail() {
     $db      = getDB();
     $orderId = (int)($_GET['id'] ?? 0);
@@ -171,6 +203,15 @@ function adminGetOrderDetail() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Update order status (admin only).
+ * 
+ * Validates status against whitelist, updates order, logs to history,
+ * sends email notification to customer.
+ * Auto-marks COD payments as paid when delivered.
+ * 
+ * @return void Sends JSON response
+ */
 function adminUpdateStatus() {
     $db      = getDB();
     $orderId = (int)($_POST['order_id'] ?? 0);
@@ -210,6 +251,14 @@ function adminUpdateStatus() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Update payment status (admin only).
+ * 
+ * Updates payment record and order payment_status.
+ * Sets paid_at timestamp when marking as paid.
+ * 
+ * @return void Sends JSON response
+ */
 function adminUpdatePayment() {
     $db      = getDB();
     $orderId = (int)($_POST['order_id'] ?? 0);
@@ -236,6 +285,14 @@ function adminUpdatePayment() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get admin dashboard statistics.
+ * 
+ * Returns: today/month/total revenue, order counts, pending orders,
+ * user count, status breakdown, 7-day revenue trend, top 5 services.
+ * 
+ * @return void Sends JSON response with dashboard data
+ */
 function getDashboard() {
     $db    = getDB();
     $today = date('Y-m-d');
@@ -280,6 +337,14 @@ function getDashboard() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get recently verified users (for admin notifications).
+ * 
+ * Tracks last seen user ID in session to show only new users.
+ * Returns up to 10 most recent verified users.
+ * 
+ * @return void Sends JSON response with new users array
+ */
 function adminGetNewUsers() {
     $db = getDB();
     $lastSeen = (int)($_SESSION['admin_last_seen_user_id'] ?? 0);
@@ -297,6 +362,14 @@ function adminGetNewUsers() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Change admin password.
+ * 
+ * Validates current password, then updates with bcrypt hash.
+ * Logs security event on failure.
+ * 
+ * @return void Sends JSON response
+ */
 function adminChangePassword() {
     $db      = getDB();
     $current = $_POST['current_password'] ?? '';
@@ -324,6 +397,13 @@ function adminChangePassword() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get contact form messages.
+ * 
+ * Returns 50 most recent messages from contact_messages table.
+ * 
+ * @return void Sends JSON response with messages array
+ */
 function getMessages() {
     $db   = getDB();
     $stmt = $db->query("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 50");
@@ -331,6 +411,14 @@ function getMessages() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get customer profile with order history (admin view).
+ * 
+ * Returns user info, stats (total orders, total spent, status counts),
+ * and 20 most recent orders.
+ * 
+ * @return void Sends JSON response with customer data
+ */
 function getCustomerProfile() {
     $db         = getDB();
     $customerId = (int)($_GET['id'] ?? 0);
@@ -373,6 +461,14 @@ function getCustomerProfile() {
 }
 
 // ── Customers List ──────────────────────────────────────────
+/**
+ * Get paginated customer list with search.
+ * 
+ * Searches by name, email, or phone. Includes order count and
+ * total spent per customer.
+ * 
+ * @return void Sends JSON response with customers and pagination
+ */
 function adminGetCustomers() {
     $db     = getDB();
     $search = sanitize($_GET['search'] ?? '');
@@ -403,12 +499,27 @@ function adminGetCustomers() {
 }
 
 // ── Service CRUD ────────────────────────────────────────────
+/**
+ * Get all services (admin view).
+ * 
+ * Returns all services including inactive ones.
+ * 
+ * @return void Sends JSON response with services array
+ */
 function adminGetAllServices() {
     $db   = getDB();
     $stmt = $db->query("SELECT id,name,description,price,unit,icon,is_active FROM services ORDER BY id");
     jsonResponse(['success'=>true,'services'=>$stmt->fetchAll()]);
 }
 
+/**
+ * Add new service (admin only).
+ * 
+ * Validates name, price, unit, and description.
+ * Creates service record and logs event.
+ * 
+ * @return void Sends JSON response with new service ID
+ */
 function adminAddService() {
     $db          = getDB();
     $name        = sanitize($_POST['name'] ?? '');
@@ -433,6 +544,13 @@ function adminAddService() {
     jsonResponse(['success'=>true,'message'=>'Service added','id'=>$newId]);
 }
 
+/**
+ * Update existing service (admin only).
+ * 
+ * Validates all fields and updates service record.
+ * 
+ * @return void Sends JSON response
+ */
 function adminUpdateService() {
     $db          = getDB();
     $serviceId   = (int)($_POST['service_id'] ?? 0);
@@ -458,6 +576,14 @@ function adminUpdateService() {
     jsonResponse(['success'=>true,'message'=>'Service updated']);
 }
 
+/**
+ * Toggle service active/inactive status.
+ * 
+ * Flips is_active flag using NOT operator.
+ * Returns new state.
+ * 
+ * @return void Sends JSON response with is_active boolean
+ */
 function adminToggleService() {
     $db        = getDB();
     $serviceId = (int)($_POST['service_id'] ?? 0);
@@ -474,6 +600,13 @@ function adminToggleService() {
     jsonResponse(['success'=>true,'is_active'=>$newState,'message'=>$newState?'Service activated':'Service deactivated']);
 }
 
+/**
+ * Soft-delete service (set inactive).
+ * 
+ * Sets is_active=0 instead of hard delete to preserve order history.
+ * 
+ * @return void Sends JSON response
+ */
 function adminDeleteService() {
     $db        = getDB();
     $serviceId = (int)($_POST['service_id'] ?? 0);
@@ -486,12 +619,26 @@ function adminDeleteService() {
 }
 
 // ── Feedback ────────────────────────────────────────────────
+/**
+ * Get all feedback with user email.
+ * 
+ * Returns feedback joined with users table for admin moderation.
+ * 
+ * @return void Sends JSON response with feedback array
+ */
 function adminGetFeedback() {
     $db   = getDB();
     $stmt = $db->query("SELECT f.*,u.email FROM feedback f JOIN users u ON f.user_id=u.id ORDER BY f.created_at DESC");
     jsonResponse(['success'=>true,'feedback'=>$stmt->fetchAll()]);
 }
 
+/**
+ * Approve feedback for public display.
+ * 
+ * Sets is_approved=1. Approved feedback appears on homepage.
+ * 
+ * @return void Sends JSON response
+ */
 function adminApproveFeedback() {
     $db = getDB();
     $id = (int)($_POST['id'] ?? 0);
@@ -501,6 +648,13 @@ function adminApproveFeedback() {
     jsonResponse(['success'=>true,'message'=>'Feedback approved']);
 }
 
+/**
+ * Reject/unapprove feedback.
+ * 
+ * Sets is_approved=0. Feedback removed from public display.
+ * 
+ * @return void Sends JSON response
+ */
 function adminRejectFeedback() {
     $db = getDB();
     $id = (int)($_POST['id'] ?? 0);
@@ -510,6 +664,13 @@ function adminRejectFeedback() {
     jsonResponse(['success'=>true,'message'=>'Feedback unapproved']);
 }
 
+/**
+ * Permanently delete feedback.
+ * 
+ * Removes feedback record from database.
+ * 
+ * @return void Sends JSON response
+ */
 function adminDeleteFeedback() {
     $db = getDB();
     $id = (int)($_POST['id'] ?? 0);
@@ -519,6 +680,14 @@ function adminDeleteFeedback() {
     jsonResponse(['success'=>true,'message'=>'Feedback deleted']);
 }
 
+/**
+ * Permanently delete order (admin only).
+ * 
+ * Cascading delete removes related items, payments, and status history.
+ * Logs deletion event.
+ * 
+ * @return void Sends JSON response
+ */
 function adminDeleteOrder() {
     $db      = getDB();
     $orderId = (int)($_POST['order_id'] ?? 0);
@@ -534,6 +703,14 @@ function adminDeleteOrder() {
     jsonResponse(['success'=>true,'message'=>'Order deleted permanently']);
 }
 
+/**
+ * Permanently delete customer account.
+ * 
+ * Cascading delete removes orders, payments, feedback, etc.
+ * Prevents deletion of admin accounts.
+ * 
+ * @return void Sends JSON response
+ */
 function adminDeleteUser() {
     $db       = getDB();
     $userId   = (int)($_POST['user_id'] ?? 0);
@@ -555,6 +732,13 @@ function adminDeleteUser() {
 }
 
 // ── Invoice ─────────────────────────────────────────────────
+/**
+ * Get invoice data for admin view.
+ * 
+ * Returns order with items, customer info, and payment details.
+ * 
+ * @return void Sends JSON response with invoice data
+ */
 function adminGetInvoice() {
     $db      = getDB();
     $orderId = (int)($_GET['id'] ?? 0);

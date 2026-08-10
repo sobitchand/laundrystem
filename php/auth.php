@@ -35,6 +35,18 @@ switch ($action) {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Handle user registration with email OTP verification.
+ * 
+ * Validates input, checks for existing accounts, generates OTP,
+ * sends verification email, and creates user record.
+ * Rate limited per IP to prevent abuse.
+ * 
+ * OWASP: A01 (CSRF), A02 (bcrypt), A03 (prepared statements),
+ *        A07 (rate limiting), A09 (security logging)
+ * 
+ * @return void Sends JSON response
+ */
 function handleRegister() {
     requireCSRF();
 
@@ -92,6 +104,17 @@ function handleRegister() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Verify email OTP and activate user account.
+ * 
+ * Uses constant-time comparison (hash_equals) to prevent timing attacks.
+ * Always checks OTP even if user not found to prevent enumeration.
+ * Clears rate limit on success.
+ * 
+ * OWASP: A07 (timing attack prevention)
+ * 
+ * @return void Sends JSON response
+ */
 function handleVerifyOTP() {
     requireCSRF();
 
@@ -130,6 +153,14 @@ function handleVerifyOTP() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Resend OTP email for account verification.
+ * 
+ * Returns same response whether user exists or not to prevent
+ * email enumeration attacks.
+ * 
+ * @return void Sends JSON response
+ */
 function handleResendOTP() {
     requireCSRF();
 
@@ -156,6 +187,16 @@ function handleResendOTP() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Handle customer login with rate limiting and session security.
+ * 
+ * Always runs password_verify() even if user not found to prevent
+ * timing attacks. Regenerates session ID on success.
+ * 
+ * OWASP: A07 (brute force prevention, session fixation)
+ * 
+ * @return void Sends JSON response with redirect
+ */
 function handleLogin() {
     requireCSRF();
 
@@ -199,6 +240,13 @@ function handleLogin() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Handle customer logout.
+ * 
+ * Clears session data, destroys session cookie, and logs event.
+ * 
+ * @return void Sends JSON response with redirect
+ */
 function handleLogout() {
     // CSRF validated in the switch dispatcher
     $userId = $_SESSION['user_id'] ?? null;
@@ -213,6 +261,14 @@ function handleLogout() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Handle forgot password request.
+ * 
+ * Sends OTP email for password reset. Returns same response
+ * whether email exists to prevent enumeration.
+ * 
+ * @return void Sends JSON response
+ */
 function handleForgot() {
     requireCSRF();
 
@@ -240,6 +296,14 @@ function handleForgot() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Handle password reset with OTP verification.
+ * 
+ * Validates OTP, hashes new password with bcrypt, and clears OTP.
+ * Uses constant-time comparison for OTP validation.
+ * 
+ * @return void Sends JSON response
+ */
 function handleReset() {
     requireCSRF();
 

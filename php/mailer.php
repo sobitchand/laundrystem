@@ -27,6 +27,13 @@ if (file_exists($phpmailerPath)) {
     }
 }
 
+/**
+ * Check if SMTP credentials are configured.
+ * 
+ * Returns false if still using placeholder credentials.
+ * 
+ * @return bool True if SMTP is configured
+ */
 function isSMTPConfigured() {
     return SMTP_USER !== 'your_email@gmail.com'
         && SMTP_PASS !== 'your_app_password'
@@ -35,6 +42,17 @@ function isSMTPConfigured() {
         && SMTP_PASS !== '';
 }
 
+/**
+ * Log email content to file when SMTP is unavailable.
+ * 
+ * Stores timestamp, recipient, subject, and body (stripped of HTML)
+ * in logs/mail.log for debugging.
+ * 
+ * @param string $toEmail Recipient email
+ * @param string $subject Email subject
+ * @param string $htmlBody Email HTML body
+ * @return void
+ */
 function logMailFallback($toEmail, $subject, $htmlBody) {
     $dir = __DIR__ . '/../logs/';
     if (!is_dir($dir)) @mkdir($dir, 0750, true);
@@ -46,6 +64,21 @@ function logMailFallback($toEmail, $subject, $htmlBody) {
     @file_put_contents($dir . 'mail.log', $entry, FILE_APPEND | LOCK_EX);
 }
 
+/**
+ * Send email via PHPMailer SMTP with fallback to mail().
+ * 
+ * Attempts SMTP delivery first. If it fails, falls back to PHP mail().
+ * If both fail, logs to mail.log.
+ * 
+ * SSL verification is disabled for local development compatibility.
+ * 
+ * @param string $toEmail Recipient email
+ * @param string $toName Recipient name
+ * @param string $subject Email subject
+ * @param string $htmlBody HTML email body
+ * @param string $plainBody Optional plain text alternative
+ * @return bool True if email sent successfully
+ */
 function sendMail($toEmail, $toName, $subject, $htmlBody, $plainBody = '') {
     if (!isSMTPConfigured()) {
         logMailFallback($toEmail, $subject, $htmlBody);
@@ -101,6 +134,17 @@ function sendMail($toEmail, $toName, $subject, $htmlBody, $plainBody = '') {
     }
 }
 
+/**
+ * Generate branded HTML email template.
+ * 
+ * Returns responsive HTML with DD Laundry branding, header, body,
+ * and footer sections.
+ * 
+ * @param string $title Page title
+ * @param string $bodyContent HTML body content
+ * @param string $footerNote Optional footer note
+ * @return string Complete HTML email template
+ */
 function getEmailTemplate($title, $bodyContent, $footerNote = '') {
     return '<!DOCTYPE html>
 <html lang="en">
@@ -140,6 +184,18 @@ function getEmailTemplate($title, $bodyContent, $footerNote = '') {
 </html>';
 }
 
+/**
+ * Send OTP verification email.
+ * 
+ * Sends 6-digit OTP code with expiry time and security warning.
+ * Supports both account verification and password reset purposes.
+ * 
+ * @param string $toEmail Recipient email
+ * @param string $toName Recipient name
+ * @param string $otp 6-digit OTP code
+ * @param string $purpose "verification" or "reset"
+ * @return bool True if email sent
+ */
 function sendOTPEmail($toEmail, $toName, $otp, $purpose = 'verification') {
     $purposeText = $purpose === 'reset' ? 'password reset' : 'account verification';
     $body = '
@@ -155,6 +211,19 @@ function sendOTPEmail($toEmail, $toName, $otp, $purpose = 'verification') {
     return sendMail($toEmail, $toName, 'Your OTP for ' . ucfirst($purposeText) . ' - DD Laundry', $html);
 }
 
+/**
+ * Send order status update notification.
+ * 
+ * Sends email with color-coded status badge and tracking link.
+ * Supports all order statuses with appropriate icons and colors.
+ * 
+ * @param string $toEmail Customer email
+ * @param string $toName Customer name
+ * @param string $orderNumber Order number
+ * @param string $newStatus New order status
+ * @param string $note Optional admin note
+ * @return bool True if email sent
+ */
 function sendOrderStatusEmail($toEmail, $toName, $orderNumber, $newStatus, $note = '') {
     $statusLabels = [
         'pending'    => ['label' => 'Order Received', 'color' => '#E67E22', 'icon' => '📋'],
@@ -183,6 +252,15 @@ function sendOrderStatusEmail($toEmail, $toName, $orderNumber, $newStatus, $note
     return sendMail($toEmail, $toName, $s['icon'] . ' Order #' . $orderNumber . ' - ' . $s['label'], $html);
 }
 
+/**
+ * Send welcome email after account verification.
+ * 
+ * Congratulates user and provides dashboard link with feature list.
+ * 
+ * @param string $toEmail Customer email
+ * @param string $toName Customer name
+ * @return bool True if email sent
+ */
 function sendWelcomeEmail($toEmail, $toName) {
     $body = '
     <h2 style="color:#C0392B;margin:0 0 20px;font-family:Georgia,serif;">Welcome to DD Laundry! 🎉</h2>

@@ -21,6 +21,13 @@ switch ($action) {
     default: jsonResponse(['error'=>'Invalid action'],400);
 }
 
+/**
+ * Get current user profile data.
+ * 
+ * Returns user info (name, email, phone, address) for logged-in user.
+ * 
+ * @return void Sends JSON response with user data
+ */
 function getProfile() {
     $db   = getDB();
     $stmt = $db->prepare("SELECT id,full_name,email,phone,address,created_at FROM users WHERE id=?");
@@ -30,6 +37,14 @@ function getProfile() {
     jsonResponse(['success'=>true,'user'=>$user]);
 }
 
+/**
+ * Update user profile information.
+ * 
+ * Validates name, phone (Nepal format), and address.
+ * Updates session name on success.
+ * 
+ * @return void Sends JSON response
+ */
 function updateProfile() {
     $db   = getDB();
     $name = sanitize($_POST['full_name'] ?? '');
@@ -51,6 +66,14 @@ function updateProfile() {
     jsonResponse(['success'=>true,'message'=>'Profile updated successfully!']);
 }
 
+/**
+ * Change user password.
+ * 
+ * Validates current password, then hashes new password with bcrypt.
+ * Logs security event on failure.
+ * 
+ * @return void Sends JSON response
+ */
 function changePassword() {
     $db      = getDB();
     $current = $_POST['current_password'] ?? '';

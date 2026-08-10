@@ -1,5 +1,12 @@
 <?php
-// DD Laundry - Contact Form (OWASP Hardened)
+/**
+ * DD Laundry - Contact Form Handler
+ * 
+ * Processes contact form submissions from the public website.
+ * Validates input, rate limits by IP, and stores message in database.
+ * 
+ * OWASP: A01 (CSRF), A03 (sanitization), A07 (rate limiting)
+ */
 require_once __DIR__ . '/config.php';
 sendSecurityHeaders();
 header('Content-Type: application/json; charset=utf-8');

@@ -31,6 +31,15 @@ elseif ($action === 'submit_feedback') { requireCSRF(); submitFeedback(); }
 else jsonResponse(['error' => 'Invalid action'], 400);
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Place a new laundry order.
+ * 
+ * Validates items, calculates total from server-side prices (never trusts
+ * client prices), creates order record, payment record, and status history.
+ * Sends confirmation email to customer.
+ * 
+ * @return void Sends JSON response with order details
+ */
 function placeOrder() {
     $db     = getDB();
     $userId = (int)$_SESSION['user_id'];
@@ -134,6 +143,14 @@ function placeOrder() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get paginated list of customer orders.
+ * 
+ * Returns orders for the logged-in user only (no IDOR).
+ * Includes item count and payment status.
+ * 
+ * @return void Sends JSON response with orders array
+ */
 function getUserOrders() {
     $db     = getDB();
     $userId = (int)$_SESSION['user_id'];
@@ -159,6 +176,14 @@ function getUserOrders() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get detailed order information.
+ * 
+ * Returns order with items, status history, and payment info.
+ * Scoped to current user only (prevents IDOR).
+ * 
+ * @return void Sends JSON response with order data
+ */
 function getOrderDetails() {
     $db      = getDB();
     $userId  = (int)$_SESSION['user_id'];
@@ -184,6 +209,14 @@ function getOrderDetails() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get all active cloth types grouped by service.
+ * 
+ * Returns hierarchical structure: service_type -> cloth_types.
+ * Used by order form to populate dropdowns.
+ * 
+ * @return void Sends JSON response with grouped cloth types
+ */
 function getClothTypes() {
     $db   = getDB();
     $stmt = $db->query("SELECT id,name,service_type,unit_price FROM cloth_types WHERE is_active=1 ORDER BY service_type,id");
@@ -196,6 +229,14 @@ function getClothTypes() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get all active services.
+ * 
+ * Returns service categories (Regular Wash, Premium Wash, etc.)
+ * with pricing and descriptions.
+ * 
+ * @return void Sends JSON response with services array
+ */
 function getServices() {
     $db   = getDB();
     $stmt = $db->query("SELECT id,name,description,price,unit,icon FROM services WHERE is_active=1 ORDER BY id");
@@ -203,6 +244,14 @@ function getServices() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Submit customer feedback/review.
+ * 
+ * Creates feedback record with rating (1-5) and message.
+ * Requires admin approval before public display.
+ * 
+ * @return void Sends JSON response
+ */
 function submitFeedback() {
     $db      = getDB();
     $userId  = (int)$_SESSION['user_id'];
@@ -222,6 +271,14 @@ function submitFeedback() {
 }
 
 // ──────────────────────────────────────────────────────────
+/**
+ * Get invoice data for order.
+ * 
+ * Returns order details with items, customer info, and payment status.
+ * Scoped to current user (prevents IDOR).
+ * 
+ * @return void Sends JSON response with invoice data
+ */
 function getInvoice() {
     $db      = getDB();
     $userId  = (int)$_SESSION['user_id'];
